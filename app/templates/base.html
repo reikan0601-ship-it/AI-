@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>{% block title %}Outfit AI{% endblock %}</title>
+  </head>
+  <body>
+    <header>
+      <h1>Outfit AI</h1>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <footer>
+      <p>&copy; 2025 Outfit AI</p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}クローゼット - Outfit AI{% endblock %}
+{% block content %}
+<div class="container">
+  <h2>クローゼット</h2>
+  <p style="color:red; font-weight:bold;">DEBUG FAVORITE OK</p>
+
+  <p><a href="/">←戻る</a></p>
+
+  {% if not items %}
+    <p>まだクローゼットにアイテムがありません。</p>
+  {% endif %}
+
+  {% for it in items %}
+  <hr />
+  {% set p = it.image_path or '' %}
+  {% if p.startswith('static/') %}
+    <img src="/{{ p }}" style="max-width:260px;" />
+  {% else %}
+    <img src="/static/{{ p.replace('\\','/') }}" style="max-width:260px;" />
+  {% endif %}
+
+  <!-- ⭐ ここに追加 ⭐ -->
+  <form method="POST" action="/favorite/toggle" style="margin:10px 0;">
+    <input type="hidden" name="id" value="{{ it.id }}">
+    <button type="submit" style="padding:8px 12px; border-radius:12px;">
+      {% if it.is_favorite %}
+        ★ お気に入り解除
+      {% else %}
+        ☆ お気に入りにする
+      {% endif %}
+    </button>
+  </form>
+
+  <div class="tags">
+    {% for t in (it.style_tags or '').split(',') if t.strip() %}
+      <span class="chip">{{ t.strip() }}</span>
+    {% endfor %}
+
+    {% for t in (it.occasions or '').split(',') if t.strip() %}
+      <span class="chip">{{ t.strip() }}</span>
+    {% endfor %}
+
+    {% for t in (it.season or '').split(',') if t.strip() %}
+      <span class="chip">{{ t.strip() }}</span>
+    {% endfor %}
+  </div>
+
+  <p>追加日時: {{ it.created_at }}</p>
+
+  {% if it.is_favorite %}
+    <p>★ お気に入り</p>
+  {% endif %}
+
+  {% endfor %}
+</div>
+{% endblock %}
+
+

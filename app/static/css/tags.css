@@ -1,0 +1,9 @@
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+
+.chip{
+  font-size:12px;
+  padding:3px 8px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.04);
+}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}判定結果 - Outfit AI{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+    <h2 style="margin:0;">判定結果</h2>
+    <p style="margin:0;"><a href="/">←戻る</a></p>
+  </div>
+
+  {% if best %}
+    <div style="
+        border: 1px solid #e9e9e9;
+        border-radius: 16px;
+        padding: 16px;
+        margin: 16px 0 22px;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+      ">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <h2 style="margin:0;">✅ おすすめ1着</h2>
+        {% if occasion %}
+          <span style="font-size:12px; padding:6px 10px; border-radius:999px; background:#f5f5f5;">
+            今回のシーン：<b>{{ occasion }}</b>
+          </span>
+        {% endif %}
+      </div>
+
+      <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:12px;">
+        <img src="/{{ best.path }}" style="max-width:320px; width:100%; border-radius:14px; border:1px solid #f0f0f0;" />
+
+        <div style="min-width:260px; flex:1;">
+          {% set rec_raw = best.score.final * 100 %}
+          {% set rec = 0 if rec_raw < 0 else (100 if rec_raw > 100 else rec_raw) %}
+
+          {% set dup = best.score.best_sim * 100 %}
+          {% set novel = (1 - best.score.best_sim) * 100 %}
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin: 4px 0 12px;">
+            <span style="display:inline-block; padding:7px 10px; border-radius:999px; background:#eef6ff; font-size:13px;">
+              おすすめ度：<b>{{ "%.0f"|format(rec) }}%</b>
+            </span>
+            <span style="display:inline-block; padding:7px 10px; border-radius:999px; background:#fff1f1; font-size:13px;">
+              かぶり度：<b>{{ "%.0f"|format(dup) }}%</b>
+            </span>
+            <span style="display:inline-block; padding:7px 10px; border-radius:999px; background:#effff1; font-size:13px;">
+              新規性：<b>{{ "%.0f"|format(novel) }}%</b>
+            </span>
+          </div>
+
+          <h3 style="margin: 8px 0;">おすすめ理由</h3>
+          <ul style="margin:0; padding-left:18px; line-height:1.6;">
+            {% for reason in best.score.reasons %}
+              <li>{{ reason }}</li>
+            {% endfor %}
+          </ul>
+
+          <details style="margin-top:12px;">
+            <summary style="cursor:pointer; color:#555;">スコア詳細（開く）</summary>
+            <div style="margin-top:8px; background:#fafafa; border:1px solid #eee; border-radius:12px; padding:10px;">
+              <div>score: <b>{{ "%.3f"|format(best.score.final) }}</b></div>
+              <div>best_sim: <b>{{ "%.3f"|format(best.score.best_sim) }}</b></div>
+            </div>
+          </details>
+
+          <!-- おすすめにも買うボタン -->
+          <form method="POST" action="/buy" style="margin-top:14px;">
+            <input type="hidden" name="path" value="{{ best.path }}">
+            <input type="hidden" name="tags_json" value='{{ best.tags | tojson }}'>
+            <input type="hidden" name="occasion" value="{{ occasion }}">
+            <button type="submit" style="padding:10px 14px; border-radius:12px;">
+              このおすすめを買う！
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h3 style="margin: 8px 0 12px;">候補3枚</h3>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
+    {% for r in results %}
+      {% set is_best = best and (r.path == best.path) %}
+      <div style="
+          border: 1px solid {{ '#bfe3c8' if is_best else '#e9e9e9' }};
+          border-radius: 16px;
+          padding: 12px;
+          background: #fff;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+        ">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <h4 style="margin:0;">候補 {{ loop.index }}</h4>
+          {% if is_best %}
+            <span style="font-size:12px; padding:6px 10px; border-radius:999px; background:#effff1;">
+              ✅ おすすめ
+            </span>
+          {% endif %}
+        </div>
+
+        <img src="/{{ r.path }}" style="width:100%; max-width:100%; border-radius:14px; border:1px solid #f0f0f0; margin-top:10px;" />
+
+        <div style="margin-top:10px;">
+          <div style="font-size:12px; color:#666; margin-bottom:6px;">タグ候補</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            {% for t in r.tags %}
+              <span style="display:inline-block; padding:6px 10px; border-radius:999px; background:#f5f5f5; font-size:12px;">
+                {{ t.tag }}
+                {% if t.score is not none %}
+                  <span style="color:#777;">({{ "%.3f"|format(t.score) }})</span>
+                {% endif %}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if r.score %}
+          <details style="margin-top:10px;">
+            <summary style="cursor:pointer; color:#555;">この候補のスコア</summary>
+            <div style="margin-top:8px; background:#fafafa; border:1px solid #eee; border-radius:12px; padding:10px;">
+              <div>score: <b>{{ "%.3f"|format(r.score.final) }}</b></div>
+              <div>best_sim: <b>{{ "%.3f"|format(r.score.best_sim) }}</b></div>
+            </div>
+          </details>
+        {% endif %}
+
+        <form method="POST" action="/buy" style="margin-top:12px;">
+          <input type="hidden" name="path" value="{{ r.path }}">
+          <input type="hidden" name="tags_json" value='{{ r.tags | tojson }}'>
+          <input type="hidden" name="occasion" value="{{ occasion }}">
+          <button type="submit" style="padding:10px 14px; border-radius:12px; width:100%;">
+            これを買う！
+          </button>
+        </form>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- ▼ ログ表示ここ ▼ -->
+  {% if stdout %}
+    <h3 style="margin-top:18px;">判定ログ（stdout）</h3>
+    <pre>{{ stdout }}</pre>
+  {% endif %}
+
+  {% if stderr %}
+    <h3 style="margin-top:18px;">エラー（stderr）</h3>
+    <pre style="color:red;">{{ stderr }}</pre>
+  {% endif %}
+</div>
+{% endblock %}

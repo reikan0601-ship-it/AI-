@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}服購入判定 - Outfit AI{% endblock %}
+{% block content %}
+<div class="container">
+  <h2>服購入判定AI</h2>
+  <p>候補画像を3枚アップして「判定する」を押してね。</p>
+
+  <form action="/judge" method="post" enctype="multipart/form-data">
+    <p>
+      <label>いつ着たい？（例: date / casual / formal）</label>
+      <input type="text" name="occasion" placeholder="date">
+      
+      <label>候補1:</label>
+      <input type="file" name="img1" accept="image/*" required>
+    </p>
+    <p>
+      <label>候補2:</label>
+      <input type="file" name="img2" accept="image/*" required>
+    </p>
+    <p>
+      <label>候補3:</label>
+      <input type="file" name="img3" accept="image/*" required>
+    </p>
+    <p><button type="submit">判定する</button></p>
+  </form>
+</div>
+{% endblock %}
